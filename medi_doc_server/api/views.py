@@ -6,6 +6,7 @@ from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from django.conf import settings
+from .models import Patient
 import json
 
 
@@ -24,18 +25,38 @@ def save_medical_details(request):
             diagnosis = data.get('diagnosis')
             prescription = data.get('prescription')
 
-            # Create a PDF file
+            if not all([name, age, symptoms, diagnosis, prescription]):
+                return JsonResponse({'error': 'All fields are required.'}, status=400)
+
+            
             file_name = f"{name}_details.pdf"
             file_path = os.path.join(DOCUMENT_FOLDER, file_name)
 
-            # Generate structured PDF
+            
             create_pdf(file_path, name, age, symptoms, diagnosis, prescription)
 
+            
+            patient = Patient.objects.create(
+                name=name,
+                age=age,
+                symptoms=symptoms,
+                diagnosis=diagnosis,
+                prescription=prescription, 
+                pdf_path=file_path
+            )
+
             return JsonResponse({'message': 'Details saved successfully.', 'file_name': file_name}, status=201)
+        
         except Exception as e:
             return JsonResponse({'error': str(e)}, status=400)
+    
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
-
+def list_patients(request):
+    # Retrieve all patients from the database
+    patients = Patient.objects.all().values('id', 'name') 
+     # Adjust fields as needed
+    print(patients)
+    return JsonResponse(list(patients), safe=False)
 
 def view_document(request):
     try:
@@ -45,6 +66,10 @@ def view_document(request):
        
     except Exception as e:
         return JsonResponse({'error': str(e)}, status=500)
+
+def view_pdf(request, patient_id):
+    patient = Patient.objects.get(id=patient_id)
+    return FileResponse(open(patient.pdf_path, 'rb'), content_type='application/pdf')
 
 
 def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):

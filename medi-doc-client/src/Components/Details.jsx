@@ -81,6 +81,8 @@ const Details = () => {
           </div>
         )}
         {documents.length === 0 && <p>No documents available.</p>}
+        <button onClick={() => navigate('/patient-details')}>Details</button>
+
       </div>
     </div>
   );
