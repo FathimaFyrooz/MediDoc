@@ -17,9 +17,15 @@ Including another URLconf
 from django.contrib import admin
 from django.urls import path
 from api.views import save_medical_details,view_document
+from django.conf import settings
+from django.conf.urls.static import static
+
+
+
 
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('save/',save_medical_details,name='save_medical_details'),
-    path('view/<str:name>/',view_document,name='view_document'),
-]
+    path('view/', view_document, name='view_document'),
+
+] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

@@ -5,10 +5,11 @@ from django.http import JsonResponse, FileResponse
 from django.views.decorators.csrf import csrf_exempt
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
+from django.conf import settings
 import json
 
-# Define the folder to save PDF documents
-DOCUMENT_FOLDER = "documents"
+
+DOCUMENT_FOLDER = os.path.join(settings.MEDIA_ROOT, "pdf")
 os.makedirs(DOCUMENT_FOLDER, exist_ok=True)
 
 @csrf_exempt
@@ -36,13 +37,14 @@ def save_medical_details(request):
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 
 
-def view_document(request, name):
-    file_name = f"{name}_details.pdf"
-    file_path = os.path.join(DOCUMENT_FOLDER, file_name)
-
-    if os.path.exists(file_path):
-        return FileResponse(open(file_path, 'rb'), content_type='application/pdf')
-    return JsonResponse({'error': 'Document not found.'}, status=404)
+def view_document(request):
+    try:
+        files = [file for file in os.listdir(DOCUMENT_FOLDER) if os.path.isfile(os.path.join(DOCUMENT_FOLDER, file))]
+        print(files)
+        return JsonResponse({'documents': files}, status=200)
+       
+    except Exception as e:
+        return JsonResponse({'error': str(e)}, status=500)
 
 
 def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):

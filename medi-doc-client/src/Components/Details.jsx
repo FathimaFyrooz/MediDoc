@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import '../Styles/Details.css'
 
 const Details = () => {
   const [formData, setFormData] = useState({
@@ -9,8 +10,8 @@ const Details = () => {
     diagnosis: '',
     prescription: ''
   });
-  const [document, setDocument] = useState('');
-  const [nameToView, setNameToView] = useState('');
+  const [documents, setDocuments] = useState('');
+ 
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -18,7 +19,7 @@ const Details = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/api/save/', formData);
+      const response = await axios.post('http://127.0.0.1:8000/save/', formData);
       alert(response.data.message);
     } catch (error) {
       console.error(error);
@@ -28,8 +29,11 @@ const Details = () => {
 
   const handleView = async () => {
     try {
-      const response = await axios.get(`http://127.0.0.1:8000/api/view/${nameToView}/`);
-      setDocument(response.data.document);
+      const response = await axios.get('http://127.0.0.1:8000/view/');
+      
+      setDocuments(response.data.documents);
+      console.log(documents)
+      
     } catch (error) {
       console.error(error);
       alert('Failed to load document.');
@@ -38,7 +42,7 @@ const Details = () => {
 
   return (
     <div>
-      <h1>MediDoc</h1>
+      <h1>Med <img src="/images\syringe1-removebg-preview.png" style={{ width: '53px', height: '130px', margin: '-26px 8px' }} /> Doc<img src="/images\healthcare.png" style={{ width: '100px', height: '130px', margin: '0 8px' }} /> </h1>
       <div>
         <h2>Enter Medical Details</h2>
         <input name="name" placeholder="Name" onChange={handleChange} />
@@ -49,18 +53,36 @@ const Details = () => {
         <button onClick={handleSave}>Save</button>
       </div>
       <div>
-        <h2>View MediDoc</h2>
-        <input placeholder="Enter Name" onChange={(e) => setNameToView(e.target.value)} />
+      <h2>View MediDoc</h2>
         <button onClick={handleView}>View MediDoc</button>
-        {document && (
+        {documents.length > 0 && (
           <div>
-            <h3>Document Content</h3>
-            <pre>{document}</pre>
+            <h3>Documents</h3>
+            {documents.map((doc, index) => (
+              <div key={index} style={{ margin: '20px 0' }}>
+                <h4>{doc}</h4>
+                <iframe
+                  src={`http://127.0.0.1:8000/documents/pdf/${doc}`}
+                  width="100%"
+                  height="500px"
+                  style={{ border: '1px solid #ccc' }}
+                >
+                  This browser does not support PDFs. Please download the document
+                  <a 
+                    href={`http://127.0.0.1:8000/documents/pdf/${doc}`}
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                  >
+                    here
+                  </a>.
+                </iframe>
+              </div>
+            ))}
           </div>
         )}
+        {documents.length === 0 && <p>No documents available.</p>}
       </div>
     </div>
   );
 };
-
 export default Details;
