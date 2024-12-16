@@ -26,8 +26,11 @@ SECRET_KEY = 'django-insecure-ilw68pltas!(g_=cb7)2@g089ho1rs77n@_lp@iep530@^r^-@
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = [
+    "localhost",  
+    "127.0.0.1",  
 
+]
 
 # Application definition
 
@@ -58,9 +61,17 @@ MIDDLEWARE = [
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:5173",
     "http://127.0.0.1:5173",
+    "http://localhost:3000"
 
       
 ]
+
+CSRF_TRUSTED_ORIGINS = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+]
+
+CSRF_COOKIE_SECURE = False
 
 MEDIA_URL = '/documents/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'documents/')

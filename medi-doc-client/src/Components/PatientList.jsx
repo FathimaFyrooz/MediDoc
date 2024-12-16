@@ -2,21 +2,35 @@ import { useEffect, useState } from 'react';
 
 function PatientList() {
     const [patients, setPatients] = useState([]);
+    const [error, setError] = useState(null); // Capture error
 
     useEffect(() => {
-        fetch('/list_patients/')
-            .then((response) => response.json())
-            .then((data) => setPatients(data));
+        fetch('http://localhost:8000/list_patients/')
+            .then((response) => {
+                if (!response.ok) {
+                    throw new Error(`HTTP error! Status: ${response.status}`);
+                }
+                return response.json();
+            })
+            .then((data) => {
+                console.log("Fetched patient data:", data); // Debug log
+                setPatients(data); // Update state with data
+            })
+            .catch((error) => {
+                console.error('Error fetching patient data:', error);
+                setError(error.message); // Set error message
+            });
     }, []);
 
     const handleViewPDF = (patientId) => {
-        window.open(`/view_pdf/${patientId}/`, '_blank');
+        window.open(`http://localhost:8000/view_pdf/${patientId}/`, '_blank');
     };
 
     return (
         <div>
             <h1>Patient Details</h1>
-            <table>
+            {error && <p style={{ color: 'red' }}>Error: {error}</p>}
+            <table border="1">
                 <thead>
                     <tr>
                         <th>Name</th>
@@ -24,14 +38,22 @@ function PatientList() {
                     </tr>
                 </thead>
                 <tbody>
-                    {patients.map((patient) => (
-                        <tr key={patient.id}>
-                            <td>{patient.name}</td>
-                            <td>
-                                <button onClick={() => handleViewPDF(patient.id)}>View PDF</button>
-                            </td>
+                    {patients.length > 0 ? (
+                        patients.map((patient) => (
+                            <tr key={patient.id}>
+                                <td>{patient.name}</td>
+                                <td>
+                                    <button onClick={() => handleViewPDF(patient.id)}>
+                                        View PDF
+                                    </button>
+                                </td>
+                            </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="2">No patients available</td>
                         </tr>
-                    ))}
+                    )}
                 </tbody>
             </table>
         </div>

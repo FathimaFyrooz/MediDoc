@@ -1,0 +1,42 @@
+/* General Reset */
+body, ul, li {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  
+  a {
+    text-decoration: none;
+    color: inherit;
+  }
+  
+  
+  nav {
+    background-color: #99abbe; 
+    padding: 10px 20px;
+    box-shadow: 0 2px 5px rgba(14, 10, 10, 0.1);
+    border-radius: 25px;
+  }
+  
+  ul {
+    display: flex;
+    justify-content: space-around; /* Evenly spaced links */
+    align-items: center;
+  }
+  
+  li {
+    margin: 0 15px; /* Add spacing between items */
+  }
+  
+  a {
+    color: rgb(3, 24, 214); 
+    font-size: 16px;
+    font-weight: bold;
+    transition: color 0.3s ease;
+  }
+  
+  /* Hover Effect */
+  a:hover {
+    color: #ffdd57; /* Light yellow for hover effect */
+  }
+  

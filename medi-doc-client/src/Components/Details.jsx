@@ -40,16 +40,67 @@ const Details = () => {
     }
   };
 
+  const fetchDiagnosis = async () => {
+    try {
+        const response = await fetch('http://127.0.0.1:8000/get_diagnosis/', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ symptoms: formData.symptoms }),
+        });
+        const data = await response.json();
+        setFormData((prev) => ({ ...prev, diagnosis: data.diagnosis }));
+    } catch (error) {
+        console.error('Error fetching diagnosis:', error);
+    }
+};
+
   return (
     <div>
-      <h1>Med <img src="/images\syringe1-removebg-preview.png" style={{ width: '53px', height: '130px', margin: '-26px 8px' }} /> Doc<img src="/images\healthcare.png" style={{ width: '100px', height: '130px', margin: '0 8px' }} /> </h1>
+      <h1>Med <img src="/images\syringe1-removebg-preview.png" style={{ width: '53px', height: '130px', margin: '-26px 8px' }} /> Doc</h1>
       <div>
-        <h2>Enter Medical Details</h2>
-        <input name="name" placeholder="Name" onChange={handleChange} />
-        <input name="age" placeholder="Age" type="number" onChange={handleChange} />
-        <textarea name="symptoms" placeholder="Symptoms" onChange={handleChange}></textarea>
-        <textarea name="diagnosis" placeholder="Diagnosis" onChange={handleChange}></textarea>
-        <textarea name="prescription" placeholder="Prescription" onChange={handleChange}></textarea>
+      <h2>Enter Medical Details</h2>
+            <form>
+                <div>
+                    <label htmlFor="name">Name:</label>
+                    <input id="name" name="name" placeholder="Name" onChange={handleChange} />
+                </div>
+                <div>
+                    <label htmlFor="age">Age:</label>
+                    <input id="age" name="age" type="number" placeholder="Age" onChange={handleChange} />
+                </div>
+                <div>
+                    <label htmlFor="symptoms">Symptoms:</label>
+                    <textarea
+                        id="symptoms"
+                        name="symptoms"
+                        placeholder="Symptoms"
+                        onChange={handleChange}
+                    ></textarea>
+                    <button type="button" onClick={fetchDiagnosis}>
+                        Get Diagnosis
+                    </button>
+                </div>
+                <div>
+                    <label htmlFor="diagnosis">Diagnosis:</label>
+                    <textarea
+                        id="diagnosis"
+                        name="diagnosis"
+                        placeholder="Diagnosis"
+                        value={formData.diagnosis}
+                        readOnly
+                    ></textarea>
+                </div>
+                <div>
+                    <label htmlFor="prescription">Prescription:</label>
+                    <textarea
+                        id="prescription"
+                        name="prescription"
+                        placeholder="Prescription"
+                        onChange={handleChange}
+                    ></textarea>
+                </div>
+      
+            </form>
         <button onClick={handleSave}>Save</button>
       </div>
       <div>
@@ -81,8 +132,6 @@ const Details = () => {
           </div>
         )}
         {documents.length === 0 && <p>No documents available.</p>}
-        <button onClick={() => navigate('/patient-details')}>Details</button>
-
       </div>
     </div>
   );

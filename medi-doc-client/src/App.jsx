@@ -12,9 +12,9 @@ function App() {
     <Router>
       {/* <Navbar /> A common navigation bar */}
       <Routes>
-        <Route path="/" element={<Home />} /> 
+        <Route path="/*" element={<Home />} /> 
         <Route path="/details" element={<Details />} /> 
-        <Route path="/listpatients" element={<PatientList />} /> 
+        <Route path="/list_patients" element={<PatientList />} /> 
        
       </Routes>
     </Router>

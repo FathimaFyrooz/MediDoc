@@ -8,6 +8,10 @@ from reportlab.pdfgen import canvas
 from django.conf import settings
 from .models import Patient
 import json
+from openai import OpenAI
+from textwrap import wrap
+import logging
+
 
 
 DOCUMENT_FOLDER = os.path.join(settings.MEDIA_ROOT, "pdf")
@@ -19,6 +23,7 @@ def save_medical_details(request):
         try:
             # Parse incoming JSON data
             data = json.loads(request.body)
+            
             name = data.get('name')
             age = data.get('age')
             symptoms = data.get('symptoms')
@@ -31,10 +36,10 @@ def save_medical_details(request):
             
             file_name = f"{name}_details.pdf"
             file_path = os.path.join(DOCUMENT_FOLDER, file_name)
-
+            
             
             create_pdf(file_path, name, age, symptoms, diagnosis, prescription)
-
+            
             
             patient = Patient.objects.create(
                 name=name,
@@ -44,7 +49,7 @@ def save_medical_details(request):
                 prescription=prescription, 
                 pdf_path=file_path
             )
-
+            print(f"Saving data for {data['name']}...") 
             return JsonResponse({'message': 'Details saved successfully.', 'file_name': file_name}, status=201)
         
         except Exception as e:
@@ -52,11 +57,9 @@ def save_medical_details(request):
     
     return JsonResponse({'error': 'Invalid request method.'}, status=405)
 def list_patients(request):
-    # Retrieve all patients from the database
-    patients = Patient.objects.all().values('id', 'name') 
-     # Adjust fields as needed
-    print(patients)
-    return JsonResponse(list(patients), safe=False)
+    patients = Patient.objects.all()
+    data = [{'id': patient.id, 'name': patient.name} for patient in patients]
+    return JsonResponse(data, safe=False)
 
 def view_document(request):
     try:
@@ -71,9 +74,11 @@ def view_pdf(request, patient_id):
     patient = Patient.objects.get(id=patient_id)
     return FileResponse(open(patient.pdf_path, 'rb'), content_type='application/pdf')
 
+# =====================================================================
 
 def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):
     """Generate a structured PDF document with patient details."""
+    
     c = canvas.Canvas(file_path, pagesize=letter)
     width, height = letter
 
@@ -85,16 +90,36 @@ def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):
     c.setFont("Helvetica", 12)
     y_position = height - 100
     line_spacing = 20
-
+    
+    
     c.drawString(50, y_position, f"Name: {name}")
     y_position -= line_spacing
     c.drawString(50, y_position, f"Age: {age}")
     y_position -= line_spacing
-    c.drawString(50, y_position, f"Symptoms: {symptoms}")
+
+    
+    symptoms_lines = wrap(symptoms, 70)  # Adjust width (70) based on line length
+    c.drawString(50, y_position, "Symptoms:")
     y_position -= line_spacing
-    c.drawString(50, y_position, f"Diagnosis: {diagnosis}")
+    for line in symptoms_lines:
+        c.drawString(70, y_position, line)
+        y_position -= line_spacing
+
+    
+    diagnosis_lines = wrap(diagnosis, 70)  # Adjust width (70) based on line length
+    c.drawString(50, y_position, "Diagnosis:")
     y_position -= line_spacing
-    c.drawString(50, y_position, f"Prescription: {prescription}")
+    for line in diagnosis_lines:
+        c.drawString(70, y_position, line)
+        y_position -= line_spacing
+
+    # Wrap and print Prescription
+    prescription_lines = wrap(prescription, 70)  # Adjust width (70) based on line length
+    c.drawString(50, y_position, "Prescription:")
+    y_position -= line_spacing
+    for line in prescription_lines:
+        c.drawString(70, y_position, line)
+        y_position -= line_spacing
 
     # Footer
     y_position -= 40
@@ -103,4 +128,34 @@ def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):
     c.drawString(50, y_position - 10, f"File: {os.path.basename(file_path)}")
 
     c.save()
+   
+logger = logging.getLogger(__name__)
+@csrf_exempt
+def get_diagnosis(request):
+    if request.method == 'POST':
+        
+        body = json.loads(request.body)
+        symptoms = body.get('symptoms', '')
+
+        if not symptoms:
+            return JsonResponse({'error': 'Symptoms are required'}, status=400)
+
+        try:
+            completion = client.chat.completions.create(
+                 model="gpt-4o-mini",
+                 messages=[
+                      {"role": "system", "content": "Act like a docter"},
+                        {
+                          "role": "user",
+                          "content": f"What is the diagnosis for the following symptoms: {symptoms}?"
+                      }
+                ]
+)
+            diagnosis = completion.choices[0].message.content
+            return JsonResponse({'diagnosis': diagnosis})
+
+        except Exception as e:
+            # Log the error to get more insights
+            logger.error(f"Error calling OpenAI API: {e}")
+            return JsonResponse({'error': str(e)}, status=500)
 
