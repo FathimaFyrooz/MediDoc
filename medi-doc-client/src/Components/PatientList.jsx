@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import "../Styles/PatientList.css";
 
 function PatientList() {
     const [patients, setPatients] = useState([]);

@@ -11,6 +11,7 @@ import json
 from openai import OpenAI
 from textwrap import wrap
 import logging
+from dotenv import load_dotenv
 
 
 
@@ -128,15 +129,20 @@ def create_pdf(file_path, name, age, symptoms, diagnosis, prescription):
     c.drawString(50, y_position - 10, f"File: {os.path.basename(file_path)}")
 
     c.save()
-   
+
+
+load_dotenv()
+
+
 logger = logging.getLogger(__name__)
+
 @csrf_exempt
 def get_diagnosis(request):
     if request.method == 'POST':
         
         body = json.loads(request.body)
         symptoms = body.get('symptoms', '')
-
+        client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
         if not symptoms:
             return JsonResponse({'error': 'Symptoms are required'}, status=400)
 
@@ -159,3 +165,43 @@ def get_diagnosis(request):
             logger.error(f"Error calling OpenAI API: {e}")
             return JsonResponse({'error': str(e)}, status=500)
 
+###############get prescription ############
+
+@csrf_exempt
+def get_prescription(request):
+    if request.method == 'POST':  # Change method check from 'GET' to 'POST'
+        try:
+            # Parse incoming JSON data
+            body = json.loads(request.body)
+            symptoms = body.get('symptoms', '')
+            diagnosis = body.get('diagnosis', '')
+            client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
+            # Validate input fields
+            if not symptoms or not diagnosis:
+                return JsonResponse({'error': 'Symptoms and diagnosis are required.'}, status=400)
+
+            # Call OpenAI API to generate prescription
+            completion = client.chat.completions.create(
+                model="gpt-4o-mini",
+                messages=[
+                    {"role": "system", "content": "Act like docter"},
+                    {"role": "user", "content": f"Given the following details:\n\nSymptoms: {symptoms}\nDiagnosis: {diagnosis}\n\nSuggest an appropriate prescription including medications and instructions."}
+                ],
+                max_tokens=150
+            )
+
+            print(f"OpenAI Response: {completion}")  # Add this log to inspect the response
+
+            prescription = completion.choices[0].message.content
+            print("###########################################")
+            print(prescription)
+
+            # Return the generated prescription
+            return JsonResponse({'prescription': prescription})
+
+        except Exception as e:
+            # Log the error for better debugging
+            logger.error(f"Error calling OpenAI API: {e}")
+            return JsonResponse({'error': 'An error occurred while generating the prescription. Please try again later.'}, status=500)
+
+    return JsonResponse({'error': 'Invalid request method. Expected POST method.'}, status=405)

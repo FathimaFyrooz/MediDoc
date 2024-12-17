@@ -8,6 +8,9 @@ const Home = () => (
     <h1 class="mainhead">Welcome to MediDoc</h1>
     <p>Manage patient details and records efficiently.</p>    
   </div>
+  <div>
+    <button>Get Started</button>
+  </div>
 </>
  
 );
