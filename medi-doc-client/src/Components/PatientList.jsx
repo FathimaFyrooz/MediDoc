@@ -65,7 +65,7 @@ function PatientList() {
         <Navbar/>
         <div style={{ padding: '20px' }}>
             <Typography variant="h4" component="h1" gutterBottom>
-                Patient Details
+                Patient Details given
             </Typography>
 
             {/* Display error if exists */}
