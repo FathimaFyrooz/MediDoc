@@ -1,17 +1,27 @@
-import React, { useState } from 'react';
-import axios from 'axios';
-import '../Styles/Details.css';
-import NavBar from './NavBar'
-
+import React, { useState } from "react";
+import axios from "axios";
+import {
+  TextField,
+  Button,
+  Box,
+  Typography,
+  Paper,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem
+} from "@mui/material";
+import NavBar from "./NavBar";
+import Grid from "@mui/material/Grid2"
 const Details = () => {
   const [formData, setFormData] = useState({
-    name: '',
-    age: '',
-    symptoms: '',
-    diagnosis: '',
-    prescription: ''
+    name: "",
+    age: "",
+    symptoms: "",
+    diagnosis: "",
+    prescription: "",
   });
-  const [documents, setDocuments] = useState('');
+  const [documents, setDocuments] = useState("");
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -19,138 +29,186 @@ const Details = () => {
 
   const handleSave = async () => {
     try {
-      const response = await axios.post('http://127.0.0.1:8000/save/', formData);
+      const response = await axios.post("http://127.0.0.1:8000/save/", formData);
       alert(response.data.message);
       setFormData({
-        name: '',
-        age: '',
-        symptoms: '',
-        diagnosis: '',
-        prescription: ''
+        name: "",
+        age: "",
+        symptoms: "",
+        diagnosis: "",
+        prescription: "",
       });
     } catch (error) {
       console.error(error);
-      alert('Failed to save details.');
+      alert("Failed to save details.");
     }
   };
 
-  const handleView = async () => {
-    try {
-      const response = await axios.get('http://127.0.0.1:8000/view/');
-      setDocuments(response.data.documents);
-      console.log(documents)
-    } catch (error) {
-      console.error(error);
-      alert('Failed to load document.');
-    }
-  };
+  // const handleView = async () => {
+  //   try {
+  //     const response = await axios.get("http://127.0.0.1:8000/view/");
+  //     setDocuments(response.data.documents);
+  //   } catch (error) {
+  //     console.error(error);
+  //     alert("Failed to load document.");
+  //   }
+  // };
 
-  const fetchDiagnosis = async () => {
+  const AskAI = async () => {
     try {
-        const response = await fetch('http://127.0.0.1:8000/get_diagnosis/', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ symptoms: formData.symptoms }),
-        });
-        const data = await response.json();
-        setFormData((prev) => ({ ...prev, diagnosis: data.diagnosis }));
-    } catch (error) {
-        console.error('Error fetching diagnosis:', error);
-    }
-  };
-
-  // Modify fetchPrescription to match your backend
-  const fetchPrescription = async () => {
-    try {
-      const response = await fetch("http://127.0.0.1:8000/get_prescription/", {
-          method: 'POST',  // Change to POST to match backend
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            symptoms: formData.symptoms,
-            diagnosis: formData.diagnosis,  // Sending diagnosis to backend as well
-          }),
+      // Use axios to send a POST request
+      const response = await axios.post('http://127.0.0.1:8000/ai_analysis/', {
+        symptoms: formData.symptoms,
       });
-
-      // Check the response and extract prescription
-      const data = await response.json();
-      console.log(data);  // This will show the prescription response
-      if (data.prescription) {
-        setFormData({ ...formData, prescription: data.prescription });
+  
+      const data = response.data;
+  
+      // Update form data with both diagnosis and prescription
+      if (data.diagnosis && data.prescription) {
+        setFormData((prev) => ({
+          ...prev,
+          diagnosis: data.diagnosis,
+          prescription: data.prescription,
+        }));
       } else {
-        console.error('Prescription not found in response');
+        console.error('Incomplete data received from backend:', data);
       }
-
     } catch (error) {
-      console.error("Error fetching prescription:", error);
+      console.error('Error fetching AI analysis:', error);
     }
   };
 
   return (
-    <>   
-    
-    <div>
-      <NavBar/>
-      <h1>DOCTER AI</h1>
-      <div>
-        <h2>Enter Medical Details</h2>
-        <form>
-          <div>
-            <label htmlFor="name">Name:</label>
-            <input id="name" name="name" placeholder="Name" value={formData.name} onChange={handleChange} />
-          </div>
-          <div>
-            <label htmlFor="age">Age:</label>
-            <input id="age" name="age" type="number" placeholder="Age" value={formData.age} onChange={handleChange} />
-          </div>
-          <div>
-            <label htmlFor="symptoms">Symptoms:</label>
-            <textarea id="symptoms" name="symptoms" placeholder="Symptoms" value={formData.symptoms} onChange={handleChange}></textarea>
-            <button type="button" onClick={fetchDiagnosis}>Get Diagnosis</button>
-          </div>
-          <div>
-            <label htmlFor="diagnosis">Diagnosis:</label>
-            <textarea id="diagnosis" name="diagnosis" placeholder="Diagnosis" value={formData.diagnosis} readOnly></textarea>
-          </div>
-          <div>
-            <button type="button" onClick={fetchPrescription}>Get Prescription</button>
-          </div>
-          <div>
-            <label htmlFor="prescription">Prescription:</label>
-            <textarea id="prescription" name="prescription" placeholder="Prescription" value={formData.prescription} readOnly></textarea>
-          </div>
-        </form>
-        <button onClick={handleSave}>Save</button>
-      </div>
-      <div>
-        <h2>View MediDoc</h2>
-        <button onClick={handleView}>View MediDoc</button>
-        {documents.length > 0 && (
-          <div>
-            <h3>Documents</h3>
-            {documents.map((doc, index) => (
-              <div key={index} style={{ margin: '20px 0' }}>
-                <h4>{doc}</h4>
-                <iframe
-                  src={`http://127.0.0.1:8000/documents/pdf/${doc}`}
-                  width="100%"
-                  height="500px"
-                  style={{ border: '1px solid #ccc' }}
+    <>
+      <NavBar />
+      <Box   sx={{ marginRight:0,marginLeft:0 ,padding: 4 }}>
+        <Typography variant="h3" gutterBottom align="center">
+          Doctor AI
+        </Typography>
+        {/* <Grid container spacing={8} sx={{width:"200%"}} > */}
+          <Grid item xs={12} md={6}>
+            <Paper elevation={3} sx={{ padding: 4 }}>
+              <Typography variant="h5" gutterBottom>
+                Enter Medical Details
+              </Typography>
+              <form>
+                <Grid container spacing={2} alignItems="center">
+    {/* Name Field */}
+    <Grid item xs={12} md={4}>
+      <TextField
+        label="Name"
+        name="name"
+        variant="outlined"
+        fullWidth
+        margin="normal"
+        value={formData.name}
+        onChange={handleChange}
+      />
+    </Grid>
+
+    {/* Age Field */}
+    <Grid item xs={12} md={4}>
+      <TextField
+        label="Age"
+        name="age"
+        variant="outlined"
+        type="number"
+        fullWidth
+        margin="normal"
+        value={formData.age}
+        onChange={handleChange}
+      />
+    </Grid>
+
+    {/* Gender Field */}
+    <Grid item  size={{md:4,xs:12,xm:6}}>
+    <FormControl fullWidth>
+  <InputLabel id="demo-simple-select-label">Gender</InputLabel>
+  <Select
+    label="Gender"
+    onChange={handleChange}
+  >
+    <MenuItem value={10}>Male</MenuItem>
+    <MenuItem value={20}>Female</MenuItem>
+    <MenuItem value={30}>Other</MenuItem>
+  </Select>
+</FormControl>
+    </Grid>
+  </Grid>
+                  
+                <TextField
+                  label="Symptoms"
+                  name="symptoms"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  minRows={4}
+                  margin="normal"
+                  value={formData.symptoms}
+                  onChange={handleChange}
+                />
+                <Button
+                  variant="contained"
+                  color="primary"
+                  fullWidth
+                  onClick={AskAI}
+                  sx={{ marginTop: 2,backgroundColor:"#ff4d6d",'&:hover': {
+                    backgroundColor: '#ffccd5', // Button background color on hover
+                    color: '#590d22', // Text color on hover
+                  },}}
                 >
-                  This browser does not support PDFs. Please download the document
-                  <a href={`http://127.0.0.1:8000/documents/pdf/${doc}`} target="_blank" rel="noopener noreferrer">here</a>.
-                </iframe>
-              </div>
-            ))}
-          </div>
-        )}
-        {documents.length === 0 && <p>No documents available.</p>}
-      </div>
-    </div>
+                  Ask to AI docter
+                </Button>
+                <TextField
+                  label="Diagnosis"
+                  name="diagnosis"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  minRows={4}
+                  margin="normal"
+                  value={formData.diagnosis}
+                  Input={{ readOnly: true }}
+                />
+                {/* <Button
+                  variant="contained"
+                  color="secondary"
+                  fullWidth
+                  onClick={fetchPrescription}
+                  sx={{ marginTop: 2 }}
+                >
+                  Get Prescription
+                </Button> */}
+                <TextField
+                  label="Prescription"
+                  name="prescription"
+                  variant="outlined"
+                  fullWidth
+                  multiline
+                  minRows={4}
+                  margin="normal"
+                  value={formData.prescription}
+                  Input={{ readOnly: true }}
+                />
+                <Button
+                  variant="contained"
+                  color="success"
+                  fullWidth
+                  onClick={handleSave}
+                  sx={{ marginTop: 2,backgroundColor:"#ff758f",'&:hover': {
+                    backgroundColor: '#ffccd5', // Button background color on hover
+                    color: '#590d22', // Text color on hover
+                  }, }}
+                >
+                  Save
+                </Button>
+              </form>
+            </Paper>
+          </Grid>
+        {/* </Grid> */}
+      </Box>
     </>
   );
 };
-
 
 export default Details;

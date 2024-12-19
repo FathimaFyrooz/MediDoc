@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.views import save_medical_details,view_document,list_patients,view_pdf,get_diagnosis,get_prescription
+from api.views import save_medical_details,list_patients,view_pdf,ask_ai
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -27,9 +27,10 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('save/',save_medical_details,name='save_medical_details'),
     path('list_patients/',list_patients, name='list_patients'),
-    path('view/', view_document, name='view_document'),
+    # path('view/', view_document, name='view_document'),
     path('view_pdf/<int:patient_id>/', view_pdf),
-    path('get_diagnosis/',get_diagnosis),
-    path('get_prescription/',get_prescription)
+    path('ai_analysis/',ask_ai,name='ask_ai'),
+    # path('get_diagnosis/',get_diagnosis),
+    # path('get_prescription/',get_prescription)
 
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
