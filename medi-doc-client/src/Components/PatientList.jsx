@@ -40,6 +40,25 @@ function PatientList() {
     const handleViewPDF = (patientId) => {
         window.open(`http://localhost:8000/view_pdf/${patientId}/`, '_blank');
     };
+    
+    const handleDelete = (patientId) => {
+        // Send DELETE request to remove the patient
+        fetch(`http://localhost:8000/delete_patient/${patientId}/`, {
+            method: 'DELETE',
+        })
+        .then((response) => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! Status: ${response.status}`);
+            }
+            // Remove the patient from the state list
+            setPatients((prevPatients) => prevPatients.filter((patient) => patient.id !== patientId));
+        })
+        .catch((error) => {
+            console.error('Error deleting patient:', error);
+            setError(error.message); // Set error message
+        });
+    };
+
 
     return (
         <>
@@ -81,7 +100,35 @@ function PatientList() {
                                                   },}}
                                             >
                                                 View PDF
+                                                
                                             </Button>
+
+                                            {/* Delete Button */}
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                onClick={() => handleDelete(patient.id)}
+                                                sx={{ marginLeft: 1, backgroundColor:"#ff4d6d",'&:hover': {
+                                                    backgroundColor: '#ffccd5', // Button background color on hover
+                                                    color: '#590d22', // Text color on hover
+                                                  }, }}
+                                            >
+                                                Delete
+                                            </Button>
+                                            <Button
+                                                variant="contained"
+                                                color="secondary"
+                                                
+                                                sx={{ marginLeft: 1, backgroundColor:"#ff4d6d",'&:hover': {
+                                                    backgroundColor: '#ffccd5', // Button background color on hover
+                                                    color: '#590d22', // Text color on hover
+                                                  }, }}
+                                            >
+                                                Update
+                                            </Button>
+                                          
+                                                
+                
                                         </TableCell>
                                     </TableRow>
                                 ))

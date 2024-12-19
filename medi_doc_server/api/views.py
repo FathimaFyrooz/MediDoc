@@ -274,3 +274,11 @@ def ask_ai(request):
             return JsonResponse({'error': 'An error occurred while generating the response. Please try again later.'}, status=500)
 
     return JsonResponse({'error': 'Invalid request method. Expected POST method.'}, status=405)
+
+def delete_patient(request, patient_id):
+    try:
+        patient = Patient.objects.get(id=patient_id)
+        patient.delete()
+        return JsonResponse({"message": "Patient deleted successfully"}, status=200)
+    except Patient.DoesNotExist:
+        return JsonResponse({"error": "Patient not found"}, status=404)

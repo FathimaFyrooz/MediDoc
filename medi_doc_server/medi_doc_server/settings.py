@@ -102,12 +102,23 @@ WSGI_APPLICATION = 'medi_doc_server.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#     }
+# }
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': 'django.db.backends.postgresql',
+        'NAME': 'DocterAI',  # Replace with your PostgreSQL database name
+        'USER': 'postgres',  # Replace with your PostgreSQL username
+        'PASSWORD': '12345',  # Replace with your PostgreSQL password
+        'HOST': 'localhost',  # Database host, usually localhost
+        'PORT': '5432',  # Default PostgreSQL port
     }
 }
+
 
 
 # Password validation
