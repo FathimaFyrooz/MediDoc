@@ -1,0 +1,54 @@
+# Ignore .env files (environment variables)
+venv/
+.env/
+*.env
+**/.env
+
+# Python related files
+__pycache__/
+*.py[cod]
+*.sqlite3
+
+# Logs
+*.log
+*.txt
+
+# Virtual environment folder
+venv/
+env/
+
+# Django database
+db.sqlite3
+db.sqlite3-journal
+
+# Static and Media files (Django's generated files)
+static/
+media/
+
+# React / Node related files
+node_modules/
+build/
+dist/
+
+# Ignore temporary files
+*.bak
+*.tmp
+*~
+
+# Editor files
+.vscode/
+.idea/
+*.swp
+
+# OS-specific files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Git ignore for backups or local configurations
+*.backup
+*.old
+
+# Ignore generated documents (PDFs or others)
+medi_doc_server/documents/pdf/
+
