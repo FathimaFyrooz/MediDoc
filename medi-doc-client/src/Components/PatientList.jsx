@@ -45,27 +45,36 @@ function PatientList() {
         // Send DELETE request to remove the patient
         fetch(`http://localhost:8000/delete_patient/${patientId}/`, {
             method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
         })
         .then((response) => {
             if (!response.ok) {
                 throw new Error(`HTTP error! Status: ${response.status}`);
             }
+            return response.json(); // Extract JSON from the response
+        })
+        .then((data) => {
+            alert(data.message); // Use the message from the response
             // Remove the patient from the state list
-            setPatients((prevPatients) => prevPatients.filter((patient) => patient.id !== patientId));
+            setPatients((prevPatients) =>
+                prevPatients.filter((patient) => patient.id !== patientId)
+            );
         })
         .catch((error) => {
             console.error('Error deleting patient:', error);
             setError(error.message); // Set error message
         });
     };
-
+    
 
     return (
         <>
         <Navbar/>
         <div style={{ padding: '20px' }}>
             <Typography variant="h4" component="h1" gutterBottom>
-                Patient Details given
+                Patient Details
             </Typography>
 
             {/* Display error if exists */}
@@ -127,8 +136,6 @@ function PatientList() {
                                                 Update
                                             </Button>
                                           
-                                                
-                
                                         </TableCell>
                                     </TableRow>
                                 ))

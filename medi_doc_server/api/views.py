@@ -275,10 +275,29 @@ def ask_ai(request):
 
     return JsonResponse({'error': 'Invalid request method. Expected POST method.'}, status=405)
 
+@csrf_exempt
 def delete_patient(request, patient_id):
-    try:
-        patient = Patient.objects.get(id=patient_id)
-        patient.delete()
-        return JsonResponse({"message": "Patient deleted successfully"}, status=200)
-    except Patient.DoesNotExist:
-        return JsonResponse({"error": "Patient not found"}, status=404)
+    if request.method == 'DELETE':
+        try:
+            # Find the patient
+            patient = Patient.objects.get(id=patient_id)
+            
+            # Construct the PDF file path
+            pdf_file_name = f"{patient.name}_details.pdf"  # Update this pattern to match your file naming convention
+            pdf_path = os.path.join(DOCUMENT_FOLDER, pdf_file_name)
+            
+            # Delete the patient record
+            patient.delete()
+
+            # Check if the file exists, then delete it
+            if os.path.exists(pdf_path):
+                os.remove(pdf_path)
+            
+            return JsonResponse({"message": "Patient deleted successfully"}, status=200)
+        except Patient.DoesNotExist:
+            return JsonResponse({"error": "Patient not found"}, status=404)
+        except Exception as e:
+            # Handle unexpected errors
+            return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=400)
