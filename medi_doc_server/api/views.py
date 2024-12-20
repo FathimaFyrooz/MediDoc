@@ -51,7 +51,7 @@ def save_medical_details(request):
                 prescription=prescription, 
                 pdf_path=file_path
             )
-            print(f"Saving data for {data['name']}...") 
+            print(f"Saving data for {data['name']}...")
             return JsonResponse({'message': 'Details saved successfully.', 'file_name': file_name}, status=201)
         
         except Exception as e:
@@ -299,5 +299,56 @@ def delete_patient(request, patient_id):
         except Exception as e:
             # Handle unexpected errors
             return JsonResponse({"error": f"An error occurred: {str(e)}"}, status=500)
+    else:
+        return JsonResponse({"error": "Invalid request method"}, status=400)
+
+def get_patient(request, patient_id):
+    try:
+        patient = Patient.objects.get(id=patient_id)
+        return JsonResponse({
+            "id": patient.id,
+            "name": patient.name,
+            "age": patient.age,
+            "symptoms": patient.symptoms,
+        }, status=200)
+    except Patient.DoesNotExist:
+        return JsonResponse({"error": "Patient not found"}, status=404)
+
+@csrf_exempt
+def update_patient(request, patient_id):
+    if request.method == 'PUT':
+        try:
+            patient = Patient.objects.get(id=patient_id)
+            data = json.loads(request.body)
+            
+
+            # Store old patient details before update for PDF deletion
+            old_pdf_path =patient.pdf_path
+
+            # Update fields
+            patient.name = data.get('name', patient.name)
+            patient.age = data.get('age', patient.age)
+            patient.symptoms = data.get('symptoms', patient.symptoms)
+            patient.diagnosis = data.get('diagnosis',patient.diagnosis)
+            patient.prescription = data.get('prescription',patient.prescription)
+            
+            patient.save()
+
+            if old_pdf_path and os.path.exists(old_pdf_path):
+                os.remove(old_pdf_path)
+
+            # Generate a new PDF with updated details
+            new_pdf_path = old_pdf_path
+            create_pdf(new_pdf_path, patient.name, patient.age, patient.symptoms, patient.diagnosis, patient.prescription)
+
+            # Update the patient's PDF path in the database
+            patient.pdf_path = new_pdf_path
+            patient.save()
+
+            return JsonResponse({"message": "Patient updated successfully"}, status=200)
+        except Patient.DoesNotExist:
+            return JsonResponse({"error": "Patient not found"}, status=404)
+        except Exception as e:
+            return JsonResponse({"error": str(e)}, status=500)
     else:
         return JsonResponse({"error": "Invalid request method"}, status=400)

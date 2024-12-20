@@ -16,7 +16,7 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from api.views import save_medical_details,list_patients,view_pdf,ask_ai,delete_patient
+from api.views import save_medical_details,list_patients,view_pdf,ask_ai,delete_patient,update_patient,get_patient
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -30,7 +30,9 @@ urlpatterns = [
     # path('view/', view_document, name='view_document'),
     path('view_pdf/<int:patient_id>/', view_pdf),
     path('ai_analysis/',ask_ai,name='ask_ai'),
-    path('delete_patient/<int:patient_id>/',delete_patient,name='delete_patient')
+    path('delete_patient/<int:patient_id>/',delete_patient,name='delete_patient'),
+    path('get_patient/<int:patient_id>/',get_patient,name='get_patient'),
+    path('update_patient/<int:patient_id>/',update_patient,name='update_patient'),
     # path('get_diagnosis/',get_diagnosis),
     # path('get_prescription/',get_prescription)
 

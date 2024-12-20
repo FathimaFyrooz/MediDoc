@@ -13,11 +13,13 @@ import {
     CircularProgress 
 } from '@mui/material';
 import Navbar from './NavBar';
+import { useNavigate } from 'react-router-dom';
 
 function PatientList() {
     const [patients, setPatients] = useState([]);
     const [loading, setLoading] = useState(true); // Track loading state
-    const [error, setError] = useState(null); // Capture error
+    const [error, setError] = useState(null);
+    const navigate=useNavigate();
 
     useEffect(() => {
         fetch('http://localhost:8000/list_patients/')
@@ -67,7 +69,9 @@ function PatientList() {
             setError(error.message); // Set error message
         });
     };
-    
+    const handleUpdate = (patientId) => {
+        navigate(`/details/${patientId}`);
+    };
 
     return (
         <>
@@ -127,7 +131,7 @@ function PatientList() {
                                             <Button
                                                 variant="contained"
                                                 color="secondary"
-                                                
+                                                onClick={() => handleUpdate(patient.id)}
                                                 sx={{ marginLeft: 1, backgroundColor:"#ff4d6d",'&:hover': {
                                                     backgroundColor: '#ffccd5', // Button background color on hover
                                                     color: '#590d22', // Text color on hover
